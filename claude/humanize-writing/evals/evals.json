@@ -1,0 +1,44 @@
+{
+  "skill_name": "humanize-writing",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "deadline-followup-email",
+      "prompt": "Write a follow-up email to a client after we missed a deadline on the Q3 report, explaining the delay and giving them a new date of next Friday.",
+      "expected_output": "A short, direct client email that owns the delay, gives a concrete new date, and doesn't lean on stock apology boilerplate, hedging, or a wall of uniform-length sentences.",
+      "files": [],
+      "assertions": [
+        {"name": "no_banned_vocabulary", "description": "Output contains zero hits from the banned AI-vocabulary list (delve, robust, leverage, showcase, meticulous, etc.)", "check": "banned_word_hits total count == 0"},
+        {"name": "no_boilerplate_phrases", "description": "Output contains zero stock AI phrases (\"it's important to note\", \"in today's fast-paced world\", etc.)", "check": "banned_phrase_hits total count == 0"},
+        {"name": "em_dash_not_excessive", "description": "Em dash usage stays at or below 3 per 100 words", "check": "em_dash_per_100_words <= 3"},
+        {"name": "sentence_length_varies", "description": "Sentence lengths show natural variation rather than uniform robotic rhythm", "check": "burstiness_ratio >= 0.3"}
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "linkedin-csv-export-post",
+      "prompt": "Write a short LinkedIn post announcing that our team just shipped a CSV export feature for our analytics dashboard.",
+      "expected_output": "A short social post that announces the feature with some specificity/personality rather than generic hype vocabulary (leverage, robust, game-changing) or a mechanical rule-of-three structure.",
+      "files": [],
+      "assertions": [
+        {"name": "no_banned_vocabulary", "description": "Output contains zero hits from the banned AI-vocabulary list", "check": "banned_word_hits total count == 0"},
+        {"name": "no_boilerplate_phrases", "description": "Output contains zero stock AI phrases", "check": "banned_phrase_hits total count == 0"},
+        {"name": "em_dash_not_excessive", "description": "Em dash usage stays at or below 3 per 100 words", "check": "em_dash_per_100_words <= 3"},
+        {"name": "sentence_length_varies", "description": "Sentence lengths show natural variation rather than uniform robotic rhythm", "check": "burstiness_ratio >= 0.3"}
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "async-standups-blog-intro",
+      "prompt": "Write the opening paragraph (150-200 words) of a blog post arguing that remote teams should replace daily standups with async written updates.",
+      "expected_output": "An opening paragraph that makes a real argument with varied sentence rhythm, not a 'in today's fast-paced world' hook or a formulaic three-part structure.",
+      "files": [],
+      "assertions": [
+        {"name": "no_banned_vocabulary", "description": "Output contains zero hits from the banned AI-vocabulary list", "check": "banned_word_hits total count == 0"},
+        {"name": "no_boilerplate_phrases", "description": "Output contains zero stock AI phrases", "check": "banned_phrase_hits total count == 0"},
+        {"name": "em_dash_not_excessive", "description": "Em dash usage stays at or below 3 per 100 words", "check": "em_dash_per_100_words <= 3"},
+        {"name": "sentence_length_varies", "description": "Sentence lengths show natural variation rather than uniform robotic rhythm", "check": "burstiness_ratio >= 0.3"}
+      ]
+    }
+  ]
+}
