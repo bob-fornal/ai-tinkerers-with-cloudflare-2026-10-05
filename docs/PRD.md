@@ -6,7 +6,7 @@ A live-code presentation repo. The format isn't "here are slides about Workers A
 
 Every phase below happened in roughly this order during real development. The presentation reconstructs each one as its own step, including the failures, because the failures are most of the lesson.
 
-**Repo layout convention:** the messy, real source this journey grew out of lives under [`base-code/`](../base-code/) — `athlete-articles` (the production app the summarization/fallback/eval/humanizer logic was pulled from), `claude/humanize-writing` (the skill and its Python checker), `cloudflare-usage-worker` (the usage/cost API), and `image-generation` (the two image-generation attempts). None of that gets demoed directly — it's reference and mining material. The lean, phase-by-phase code that actually gets live-coded on stage lives under `presentation-code/`, built by extracting and simplifying the relevant pieces out of `base-code/` per phase (Section 7 below maps each phase to its `base-code/` source).
+**Repo layout convention:** the messy, real source this journey grew out of lives under [`base-code/`](../base-code/) — `athlete-articles` (the production app the summarization/fallback/eval/humanizer logic was pulled from), `claude/humanize-writing` (the skill and its Python checker), `cloudflare-usage-worker` (the usage/cost API), `image-generation` (the two image-generation attempts), `copilot` (a GitHub Copilot custom agent — instruction files, not application code — built up from real, live-verified Cloudflare findings; see Section 2.1 below), and `cloudflare-mcp` (a real, working MCP server on Workers + a Durable Object, Phase 9's source). None of that gets demoed directly — it's reference and mining material. The lean, phase-by-phase code that actually gets live-coded on stage lives under `presentation-code/`, built by extracting and simplifying the relevant pieces out of `base-code/` per phase (Section 7 below maps each phase to its `base-code/` source).
 
 ## 2. Background: how this project actually unfolded
 
@@ -30,11 +30,19 @@ Every phase below happened in roughly this order during real development. The pr
 
 *Note added while rebuilding this for the talk:* checking the original code's reference-image model ID against today's catalog turned up a likely explanation — that exact ID doesn't exist in the current listing at all, only a similarly-named inpainting model does. Possibly a wrong model ID the whole time, not a deeper platform limitation. See [`presentation-code/07-image/README.md`](../presentation-code/07-image/README.md) for the live-demo angle on this.
 
+## 2.1. A second, independent source: the Copilot agent (and a working MCP server)
+
+`base-code/copilot/` isn't application code — it's a GitHub Copilot custom agent (`cloudflare_worker.agent.md`, plus eight numbered topic files under `cloudflare/`) built up separately from hands-on Cloudflare work outside this specific talk's journey. It's reference material, but three things in it matter directly to this repo:
+
+- **It corroborates and considerably sharpens the image-generation story.** `07-workers-ai-image-generation-guidelines.md` documents live-verified, model-by-model findings: `stable-diffusion-xl-base-1.0` doesn't accept image input despite its own docs claiming otherwise (a confirmed Cloudflare docs bug, [cloudflare-docs#11835](https://github.com/cloudflare/cloudflare-docs/issues/11835)); `flux-1-schnell` silently ignores `width`/`height`/`image` entirely with no error; and — this is the one worth flagging against the note directly above — `stable-diffusion-v1-5-img2img` **does** exist in the catalog as the named img2img specialist, but is **account-gated** (error `5018`) on typical accounts, which is a different failure mode than "the model ID doesn't exist." The earlier note's "possibly a wrong model ID" theory and this agent's "it exists but is account-gated" finding aren't the same story — left unreconciled deliberately (the presenter's call, not this repo's), see `presentation-code/07-image/README.md`.
+- **It covers ground this talk didn't originally touch.** D1/SQLite gotchas (most notably: never place a rollback `.sql` file in the directory Wrangler scans for forward migrations — it gets auto-applied on the next `apply`, running whatever destructive statements it contains), Durable Objects vs. KV for exact-vs-approximate counters, and lessons from building a real MCP server on Workers end to end.
+- **The MCP-server lessons aren't just documented — they're a real, working project.** `base-code/cloudflare-mcp/` is a complete Worker + Durable Object that serves the Copilot agent's own content over the MCP protocol, built separately from this talk. It's real enough, and on-theme enough, that it's now Phase 9 (a bonus phase) — see below.
+
 ## 3. Audience & format
 
 - **Audience:** developers with general JS/TS familiarity, little to no Workers AI experience. Assume they know what a Cloudflare Worker is; don't assume they know the AI binding, `env.AI.run()`, or the model catalog conventions.
 - **Format:** live-coded, phase by phase, in the order above. Each phase should visibly build on the last — the fallback-model logic only makes sense once the audience has watched a model deprecate mid-demo (or seen it staged).
-- **Timebox: 15 minutes, hard.** The goal is getting through as much of the eight-phase story as possible in that window, not covering all eight in full depth. **Every phase is deployed ahead of time** — nothing gets typed from scratch on stage. The show is walking through already-written code and then operating the already-deployed Worker: hitting endpoints, reading responses, and in Phase 2's case, flipping an environment variable and redeploying live (a few seconds, not code-typing) to trigger the fallback. See [`presentation-code/README.md`](../presentation-code/README.md) for the per-phase time budget and exactly what happens on stage for each one. The setup checklist, the day-before verification pass, and the run-of-show with its cut priorities are their own docs — [`DEPLOYMENT.md`](DEPLOYMENT.md), [`PRE-PRESENTATION.md`](PRE-PRESENTATION.md), [`SCRIPT.md`](SCRIPT.md) — rather than folded into this PRD.
+- **Timebox: 15 minutes, hard.** The goal is getting through as much of the eight-phase story (plus Phase 9, a bonus ninth) as possible in that window, not covering everything in full depth. **Every phase is deployed ahead of time** — nothing gets typed from scratch on stage. The show is walking through already-written code and then operating the already-deployed Worker: hitting endpoints, reading responses, and in Phase 2's case, flipping an environment variable and redeploying live (a few seconds, not code-typing) to trigger the fallback. See [`presentation-code/README.md`](../presentation-code/README.md) for the per-phase time budget and exactly what happens on stage for each one. The setup checklist, the day-before verification pass, and the run-of-show with its cut priorities are their own docs — [`DEPLOYMENT.md`](DEPLOYMENT.md), [`PRE-PRESENTATION.md`](PRE-PRESENTATION.md), [`SCRIPT.md`](SCRIPT.md) — rather than folded into this PRD. Phase 9 is explicitly the first thing to cut if the clock demands it — see `SCRIPT.md`'s cut order.
 - **Tone:** this is a "here's what actually happened" talk, not a polished how-to. Failures stay in. The NSFW false-positive and the broken reference-image attempt are the two moments worth lingering on, not cutting.
 
 ## 4. Goals
@@ -46,6 +54,7 @@ Every phase below happened in roughly this order during real development. The pr
 6. Demonstrate real cost-awareness tooling (neuron usage/cost API with daily breakdown) that others can adapt.
 7. Give an honest, dated comparison of JS vs. TS vs. Python Workers for AI workloads.
 8. Show the current rough edges of image generation on the platform — inconsistent params, filter false positives, no working reference-image flow — as a documented, reproducible finding.
+9. **(Bonus, Phase 9)** Show what building something genuinely new on the platform — an MCP server, not a Workers AI call — surfaces: a stateless-handler pattern, a Durable Object used as pure storage, and how the audience's own "read the actual output" and "verify, don't trust" habits from the earlier phases carry over to code that has nothing to do with AI generation at all.
 
 ## 5. Non-goals
 
@@ -114,31 +123,37 @@ Two decisions lock in how these get written:
 - The attempted (non-working) image-to-image / reference-image implementation, kept as a documented failure rather than deleted.
 - *Extracted from:* `base-code/image-generation/` — `image-test.js` is the naive first attempt (a hard-coded, invalid SDXL dimension pair is the reproducible break); `image-generator.js` is the hardened version with `clampDimensions()` and the `IMG2IMG_MODEL` reference-image branch. Note `image-generator.js` is bundled/compiled output, not hand-written source — no `src/worker.js` exists alongside it, so this phase's version should be rewritten as clean source rather than edited in place.
 
+**Phase 9 (bonus) — An MCP server on Workers**
+- `presentation-code/09-mcp/` — a Worker + Durable Object serving the Copilot agent's own learnings content as an MCP resource and tool, plus a browser landing page.
+- *Extracted from:* `base-code/cloudflare-mcp/` — unlike every other phase, this one is adopted near-verbatim rather than trimmed down; the base code was already exactly this scoped (see its own `PRD.md`'s non-goals). Only the missing `package.json`/`wrangler.toml`/`tsconfig*.json` were added (this base source, like every other one in the repo, shipped without them) and the Worker renamed for consistency with this talk's naming.
+
 **Supporting**
 - This `PRD.md` and `README.md`.
 - [`DEPLOYMENT.md`](DEPLOYMENT.md) — the setup checklist for every phase.
 - [`PRE-PRESENTATION.md`](PRE-PRESENTATION.md) — the day-before/morning-of verification pass.
 - [`SCRIPT.md`](SCRIPT.md) — the run-of-show, mapping each phase to what happens on stage, with pacing checkpoints and a ranked cut order.
-- [`TAKEAWAYS.md`](TAKEAWAYS.md) — the eight closing takeaways, written out in full.
+- [`TAKEAWAYS.md`](TAKEAWAYS.md) — the eight closing takeaways, written out in full, plus the Phase 9 bonus lesson.
 
 ### Infrastructure requirements, at a glance
 
 No phase needs a database. Only Phase 3 touches KV, and it's optional even
 there. The only secrets in the whole talk are Phase 5's two Cloudflare API
-credentials. Full detail (exact binding names, dashboard setup steps) lives
-in [`presentation-code/README.md`](../presentation-code/README.md) and each
+credentials. Phase 9 is the only phase needing a Durable Object. Full detail
+(exact binding names, dashboard setup steps) lives in
+[`presentation-code/README.md`](../presentation-code/README.md) and each
 phase's own `README.md`; summarized here:
 
-| Phase | `AI` binding | Env vars / secrets | KV | DB |
-|---|---|---|---|---|
-| 1a. Summarize (truncated) | Yes | — | — | — |
-| 1b. Summarize (fixed) | Yes | — | — | — |
-| 2. Fallback | Yes | `PRIMARY_MODEL`, `FALLBACK_MODEL` | — | — |
-| 3. Eval | Yes | — | `MODEL_KV` (optional) | — |
-| 4. Humanizer | Yes | `FIX_MODEL` (optional) | — | — |
-| 5. Usage | No | `CF_API_TOKEN`, `CF_ACCOUNT_ID` | — | — |
-| 6. Languages | Yes ×3 | — | — | — |
-| 7. Image | Yes | — | — | — |
+| Phase | `AI` binding | Env vars / secrets | KV | DO | DB |
+|---|---|---|---|---|---|
+| 1a. Summarize (truncated) | Yes | — | — | — | — |
+| 1b. Summarize (fixed) | Yes | — | — | — | — |
+| 2. Fallback | Yes | `PRIMARY_MODEL`, `FALLBACK_MODEL` | — | — | — |
+| 3. Eval | Yes | — | `MODEL_KV` (optional) | — | — |
+| 4. Humanizer | Yes | `FIX_MODEL` (optional) | — | — | — |
+| 5. Usage | No | `CF_API_TOKEN`, `CF_ACCOUNT_ID` | — | — | — |
+| 6. Languages | Yes ×3 | — | — | — | — |
+| 7. Image | Yes | — | — | — | — |
+| 9. MCP (bonus) | No | — | — | `LEARNINGS_HUB` | — |
 
 ## 8. Phased implementation plan (steps, not code)
 
@@ -201,7 +216,14 @@ Each phase below is a live-demo unit: a starting state, what gets built or trigg
 4. Attempt the image-to-image/reference-image flow with the originally-attempted model ID and show it fail, then try the current catalog's differently-named model — see `presentation-code/07-image/README.md` for why this might land as a genuine live fix rather than a repeat of the original failure.
 5. Land the takeaway: image generation on Workers AI is the least uniform part of the catalog right now — plan for per-model handling, not a shared code path.
 
+### Phase 9 (bonus) — An MCP server on Workers *(~3 min, pre-deployed — needs npm + Wrangler, first to cut if short on time)*
+1. Frame it honestly: this one isn't from the original summarizer journey — it's separate, real Cloudflare work (the Copilot agent's own content, served over MCP) folded in because it's too good a "here's what breaks when you try something genuinely new" source to skip.
+2. Show `src/index.ts` and `learnings-hub.ts` — a stateless MCP handler (not the deprecated `McpAgent`) reading from a Durable Object that has zero MCP awareness, just seed-once storage.
+3. Show the landing page at `/`, then connect a live MCP client to `/mcp` (`claude mcp add --transport http ...` is the fastest on-stage path).
+4. Ask the connected client something the tool/resource can answer — ideally something that surfaces the Phase 7 img2img/account-gating discrepancy live, tying this bonus phase back into the talk's own open thread.
+5. Land the takeaway: the same "read the actual output, verify before trusting" habits from every earlier phase apply just as much to a Worker that has nothing to do with Workers AI at all.
+
 ### Closing *(~0.5 min)*
-1. Walk back through the eight takeaways as a single list — the full write-up of each lives in [`TAKEAWAYS.md`](TAKEAWAYS.md).
+1. Walk back through the eight takeaways as a single list, plus the Phase 9 bonus lesson if it was shown — the full write-up of each lives in [`TAKEAWAYS.md`](TAKEAWAYS.md).
 2. Point at the repo as the reusable starting point — eval harness, humanizer gates, usage API, and per-model image handling are all things worth lifting directly.
 3. Name the one open problem explicitly (reference-image generation) as an invitation for the audience, not a loose end to hide.

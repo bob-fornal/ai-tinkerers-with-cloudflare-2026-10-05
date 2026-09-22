@@ -25,6 +25,7 @@ deployed ahead of time; nothing here is a mockup.
 | What Cloudflare's usage page doesn't tell you, and the API that fills the gap | Staying inside a 10,000-neuron/day free tier means actually seeing where the neurons go. |
 | JS vs. TS vs. Python — the same AI call, compared | One of those three isn't like the other two, and it's not the one you'd guess from syntax alone. |
 | Image generation's rough edges | Inconsistent parameters across models, a real false positive, and one moment I'm deliberately not telling you the outcome of in advance. |
+| *(Bonus, time permitting)* An MCP server on Workers | Separate, real Cloudflare work, folded in because it's too good a "here's what breaks when you try something new" source to skip. First thing I'll cut if we're short on time. |
 
 ## What this isn't
 

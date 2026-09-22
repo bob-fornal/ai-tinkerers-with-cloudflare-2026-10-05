@@ -45,8 +45,17 @@ out live, on stage, same as the audience.
    catalog only lists `@cf/runwayml/stable-diffusion-v1-5-inpainting`
    (`INPAINTING_MODEL_CURRENT` in `worker.js`). That's a real candidate for
    *why* the reference-image flow never worked — not a mysterious platform
-   quirk, possibly just a wrong model ID the whole time. `worker.js` accepts
-   either ID in the `model` field. **Deliberately don't pre-test which one
+   quirk, possibly just a wrong model ID the whole time.
+
+   **Read this before presenting, though:** `base-code/copilot/cloudflare/07-workers-ai-image-generation-guidelines.md`
+   is a separate, live-verified source that tells a more specific story —
+   `stable-diffusion-v1-5-img2img` *does* exist in the catalog, it's just
+   **account-gated** (error `5018`) on typical accounts, a different failure
+   mode than "wrong ID." The two notes haven't been reconciled yet; check
+   which one actually matches your account's behavior before deciding what
+   to say on stage.
+
+   `worker.js` accepts either ID in the `model` field. **Deliberately don't pre-test which one
    works before the talk** — this is the one moment in the whole run-of-show
    that's a genuine live unknown, matching the honest tone of everything
    else in this talk:

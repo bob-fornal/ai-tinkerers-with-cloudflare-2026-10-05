@@ -254,26 +254,99 @@ and fixed every one: root `README.md` now points at `docs/...`, and every
 
 **Delivered:** this file.
 
+## 17. `base-code/copilot/` — a second, independent source
+
+**User action:** added `base-code/copilot/` — a GitHub Copilot custom agent
+(`cloudflare_worker.agent.md` plus eight numbered topic files under
+`cloudflare/`) built up from real, hands-on Cloudflare work outside this
+talk's specific journey: Worker API design, D1/SQLite gotchas, Durable
+Objects, KV as a document store, an example project structure, Workers AI
+image-generation behavior (live-verified against real endpoints), and
+lessons from building an MCP server on Workers.
+
+**Asked:** document its presence within the project.
+
+**Found:** the image-generation topic file
+(`07-workers-ai-image-generation-guidelines.md`) considerably sharpens —
+and partly contradicts — the img2img story already written into `PRD.md`
+and `presentation-code/07-image/README.md`. This repo's existing note
+theorizes a wrong/nonexistent model ID; the Copilot agent's live-verified
+finding is that `stable-diffusion-v1-5-img2img` **does** exist in the
+catalog but is **account-gated** (`5018`) on typical accounts — a different
+failure mode, not yet reconciled with the earlier theory. Flagged rather
+than silently resolved, since fixing Phase 7 to match wasn't the ask here.
+
+**Delivered:** documented `base-code/copilot/` in `PRD.md` (a new §2.1,
+alongside the flagged discrepancy), the root `README.md`'s repo-layout tree
+and Status section, and this entry.
+
+## 18. Phase 9 — an MCP server, and a mid-turn pivot to real code
+
+**Asked:** leave the image-generation discrepancy as flagged (no
+reconciliation), and add the MCP work as a new Phase 9.
+
+**First attempt, then corrected mid-turn:** `base-code/copilot/` only ever
+contained guideline *documentation*, not a working MCP implementation — so
+this started as a from-scratch build, informed by
+`08-mcp-server-guidelines.md` and cross-checked against Cloudflare's own
+`createMcpHandler` docs via two live fetches (confirming the import path,
+factory signature, and the `agents`/`@modelcontextprotocol/server`/`zod`
+dependency set). Partway through writing that speculative `src/index.ts`,
+the user added `base-code/cloudflare-mcp/` — a complete, real, working
+Worker + Durable Object project (its own `PRD.md`, `README.md`, a
+`build-content.ts` merge script, full MCP client setup docs for five
+different clients) that already does exactly this, built separately. The
+speculative file was discarded in favor of adopting the real one.
+
+**Delivered:** `presentation-code/09-mcp/` — `src/index.ts` and
+`learnings-hub.ts` copied near-verbatim from `base-code/cloudflare-mcp/`
+(diffed first to confirm the content files were byte-identical to
+`base-code/copilot/cloudflare/`), plus the missing `package.json`,
+`wrangler.toml`, two `tsconfig*.json` files, and a `.gitignore` — none of
+which existed in the base source, consistent with every other `base-code/`
+project in this repo. Positioned as a bonus phase (not part of the original
+summarizer journey, explicitly framed that way on stage), placed after
+Phase 7 and before Closing, and marked the first cut in `SCRIPT.md`'s
+priority order — ahead of Phase 6 — given it's the newest addition, the
+most tooling-heavy (real npm dependencies, a Durable Object, the second
+local-tooling exception alongside Phase 6), and the least familiar concept
+for the stated audience. Updated every cross-referencing doc: `PRD.md`
+(§2.1, goals, code inventory, infra table — now with a Durable Object
+column, phased plan), `presentation-code/README.md` (timing/bindings tables,
+conventions, phase list), `SCRIPT.md` (new cut-order entry #1, a full pacing
+recompute to ~19.5 min total, a new phase section), `SUMMARY.md`,
+`TAKEAWAYS.md` (a bonus lesson section), `DEPLOYMENT.md`,
+`PRE-PRESENTATION.md`, and the root `README.md`. Flagged honestly in
+`09-mcp/README.md`: unlike every other phase, this one hasn't been
+independently re-deployed and re-verified in this session, since no live
+Cloudflare account or MCP client was available here to test it end to end.
+
 ## Standing decisions, for quick reference
 
 These apply across the whole repo and were each decided once, not
 re-litigated per phase:
 
-- **Lean extraction, not wholesale reuse.** `base-code/athlete-articles`'s
-  D1, Firebase auth, Turnstile, and rate limiting never made it into
-  `presentation-code/` — only the relevant logic, rewritten.
-- **No local tooling, except Phase 6.** Every other phase is a single
-  paste-ready `worker.js`, no `package.json`/`tsconfig.json`/wrangler
+- **Lean extraction, not wholesale reuse — except when the source is
+  already exactly right-sized.** `base-code/athlete-articles`'s D1,
+  Firebase auth, Turnstile, and rate limiting never made it into
+  `presentation-code/` — only the relevant logic, rewritten. Phase 9 is the
+  one exception: `base-code/cloudflare-mcp/` was already minimal and
+  well-scoped, so it was adopted near-verbatim instead.
+- **No local tooling, except Phases 6 and 9.** Every other phase is a
+  single paste-ready `worker.js`, no `package.json`/`tsconfig.json`/wrangler
   config. Phase 6 needs Wrangler because Python Workers can't be created
-  through the dashboard.
-- **No database anywhere; one optional KV namespace total.** Only the eval
-  phase touches KV, and only for two of its three routes.
+  through the dashboard; Phase 9 needs it because an MCP server has real
+  npm dependencies and a Durable Object binding.
+- **No database anywhere; one optional KV namespace, one Durable Object.**
+  The eval phase touches KV (two of its three routes); Phase 9 is the only
+  phase needing a Durable Object.
 - **Everything is pre-staged.** No phase is typed live on stage; Phase 2's
   variable-flip-and-redeploy is the sole live *operation*.
 - **Verify, don't trust.** Model IDs and platform claims got checked against
-  live sources during this session at least three separate times (the
-  catalog itself, the `max_tokens` default, the img2img model ID) — each
-  check changed what got presented as fact.
+  live sources during this session at least four separate times (the
+  catalog itself, the `max_tokens` default, the img2img model ID, the
+  `createMcpHandler` API surface) — each check changed what got presented as
+  fact, or in Phase 9's case, replaced a guess with real code entirely.
 - **Failures stay in.** The NSFW false positive and the img2img/inpainting
   unknown are deliberately not smoothed over or pre-solved.
 
@@ -295,4 +368,6 @@ presentation-code/
   01a-summarize/  01b-summarize-tokens/  02-fallback/  03-eval/
   04-humanizer/   05-usage/  06-languages/  07-image/
   (each with worker.js + README.md; see presentation-code/README.md)
+  09-mcp/                           (bonus) adopted from base-code/cloudflare-mcp/,
+                                     see its own README.md
 ```

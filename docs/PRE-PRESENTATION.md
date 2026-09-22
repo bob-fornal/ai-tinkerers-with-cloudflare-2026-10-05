@@ -53,6 +53,10 @@ between deploy day and presentation day if you don't check.
       `elapsedMs` looks reasonable (not a timeout).
 - [ ] 7: confirm `worker.js` generates an image with just a `prompt`, and
       `broken-example.js` fails on its bad dimensions as expected.
+- [ ] 9 (bonus): confirm `/` still returns the landing page, and that an MCP
+      client can still connect to `/mcp` and get a response. If you're
+      already tight on time, it's fine to skip re-verifying this one in
+      depth — it's the first thing `SCRIPT.md` says to cut anyway.
 
 ### The one thing to deliberately NOT check
 - [ ] **Do not run the img2img/inpainting comparison in Phase 7.** The plan

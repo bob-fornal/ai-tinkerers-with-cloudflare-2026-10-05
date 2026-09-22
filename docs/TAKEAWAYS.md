@@ -1,11 +1,12 @@
 # TAKEAWAYS — the closing recap
 
-The eight lessons this talk actually earned, in the order they came up.
-This is the crib sheet for the ~30-second Closing (see
-[`SCRIPT.md`](SCRIPT.md)'s Closing section) — each one is short enough to say
-out loud in a breath, backed by the specific moment in the talk that proved
-it, not just asserted. It also stands on its own afterward, if anyone wants
-the summary without sitting through the demo again.
+The eight lessons this talk actually earned, in the order they came up, plus
+one bonus from Phase 9 if you got to it. This is the crib sheet for the
+~30-second Closing (see [`SCRIPT.md`](SCRIPT.md)'s Closing section) — each
+one is short enough to say out loud in a breath, backed by the specific
+moment in the talk that proved it, not just asserted. It also stands on its
+own afterward, if anyone wants the summary without sitting through the demo
+again.
 
 | # | Phase | Takeaway |
 |---|---|---|
@@ -87,6 +88,18 @@ all behaved differently model to model in Phase 7. A parameter set that
 worked for one model broke another outright, and a real prompt ("a wild
 beard") tripped the NSFW filter as a false positive. Per-model handling
 isn't a nice-to-have here — it's the only thing that actually works.
+
+## Bonus (Phase 9): the same habits apply to code that isn't Workers AI at all
+
+Phase 9 isn't part of the original journey — it's separate, real Cloudflare
+work (a Copilot custom agent's worth of live-verified findings, served over
+MCP) folded in because it's too good a "here's what building something
+genuinely new surfaces" source to skip. It has nothing to do with Workers
+AI: a stateless MCP handler, a Durable Object used as pure storage. The
+lesson is the same one underneath everything else tonight, just proven on
+different material — read the actual output, verify before trusting,
+don't assume "it compiles" means "it works." First thing cut if the talk
+runs long; nothing else in these eight takeaways depends on it.
 
 ## The meta-lesson underneath all eight: re-check "broken," don't just repeat it
 

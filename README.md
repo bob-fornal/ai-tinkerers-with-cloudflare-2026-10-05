@@ -23,10 +23,15 @@ Also in `docs/`: [`talk-summary-tables.pptx`](docs/talk-summary-tables.pptx) —
 
 ## Status
 
-Planning docs and all eight phases of `presentation-code/` are built.
-`base-code/` holds the real source this journey grew out of — a larger
-production app, the usage/cost worker, and two image-generation attempts —
-kept as reference and mining material, not demoed directly.
+Planning docs and all eight phases of `presentation-code/` are built, plus a
+bonus Phase 9. `base-code/` holds the real source this journey grew out of —
+a larger production app, the usage/cost worker, two image-generation
+attempts, a GitHub Copilot custom agent of live-verified Cloudflare
+findings, and a real working MCP server built from that same agent's
+content — kept as reference and mining material, not demoed directly. See
+[`docs/PRD.md`](docs/PRD.md#21-a-second-independent-source-the-copilot-agent-and-a-working-mcp-server)
+for what the Copilot agent adds, including a correction worth resolving
+before presenting Phase 7.
 `presentation-code/` is the lean, phase-by-phase demo code actually shown on
 stage, extracted and simplified from `base-code/` per the mapping in
 [`docs/PRD.md`](docs/PRD.md#7-code-inventory-final-solutions-needed).
@@ -42,13 +47,14 @@ stage, extracted and simplified from `base-code/` per the mapping in
 7. **Usage and cost tracking** — an API for staying inside the 10,000-neuron/day free tier, with a daily breakdown.
 8. **JS vs. TS vs. Python performance** — the same AI call, three languages, compared.
 9. **Image generation** — inconsistent parameters across models, an NSFW false positive, and an honest look at the reference-image flow that never worked.
+10. **(Bonus, Phase 9) An MCP server on Workers** — separate, real Cloudflare work, folded in because it's too good a "here's what breaks when you try something new" source to skip. First thing cut if the talk runs long.
 
 See [`docs/PRD.md`](docs/PRD.md#8-phased-implementation-plan-steps-not-code) for the full step-by-step for each phase.
 
 ## Prerequisites
 
 - A [Cloudflare account](https://dash.cloudflare.com/sign-up) with Workers AI enabled. That's it for Phases 1–5 and 7.
-- **Phase 6 is the one exception.** Python Workers aren't deployable through the dashboard's Quick Edit, so that phase alone needs [Node.js](https://nodejs.org/) (LTS) and [Wrangler](https://developers.cloudflare.com/workers/wrangler/) locally (`npm install -g wrangler`, then `wrangler login`).
+- **Phases 6 and 9 are the exceptions.** Python Workers aren't deployable through the dashboard's Quick Edit (Phase 6), and an MCP server has real npm dependencies plus a Durable Object binding (Phase 9, bonus) — both need [Node.js](https://nodejs.org/) (LTS) and [Wrangler](https://developers.cloudflare.com/workers/wrangler/) locally (`npm install -g wrangler`, then `wrangler login`).
 
 ## Deploying ahead of the talk (Phases 1a–5, 7 — dashboard paste-in, no local tooling)
 
@@ -73,6 +79,25 @@ cd ../py && npx wrangler deploy
 
 This is the only phase that needs the CLI, since Python Workers can't be created through the dashboard. Like everything else, it's deployed before the talk — on stage you just hit all three URLs and compare `elapsedMs`.
 
+## Deploying Phase 9 (bonus) ahead of the talk
+
+```bash
+cd presentation-code/09-mcp
+npm install
+npx wrangler login   # if not already done for Phase 6
+npm run deploy       # merges content/ into a single doc, then wrangler deploy
+```
+
+This is a bonus phase — separate, real Cloudflare work (see
+[`docs/PRD.md`](docs/PRD.md#21-a-second-independent-source-the-copilot-agent-and-a-working-mcp-server)),
+not part of the original journey, and the first thing to cut per
+[`docs/SCRIPT.md`](docs/SCRIPT.md) if you're short on time. It's the one
+phase in the whole talk that needs a Durable Object binding — see
+[`presentation-code/09-mcp/README.md`](presentation-code/09-mcp/README.md)
+for the full setup, live-demo script, and an honest caveat: unlike every
+other phase, this one hasn't been independently re-verified in this
+session, since no live Cloudflare account was available to test-deploy it.
+
 ## Repo layout
 
 ```
@@ -81,6 +106,8 @@ base-code/                    # reference source this journey grew out of -- not
   claude/humanize-writing/      # the humanize-writing skill + its Python checker
   cloudflare-usage-worker/      # complete usage/cost API (Phase 5 source)
   image-generation/             # two image-generation attempts (Phase 7 source)
+  copilot/                      # GitHub Copilot custom agent -- live-verified Cloudflare findings, not app code
+  cloudflare-mcp/                # real, working MCP server -- Phase 9 (bonus) source, adopted near-verbatim
 presentation-code/            # lean, phase-by-phase demo code (built)
   01a-summarize/                worker.js, sample-request.json, README.md -- no max_tokens, output truncates
   01b-summarize-tokens/         worker.js, sample-request.json, README.md -- max_tokens fix
@@ -90,6 +117,7 @@ presentation-code/            # lean, phase-by-phase demo code (built)
   05-usage/                     worker.js, README.md
   06-languages/                 js/, ts/, py/ (each with a worker + wrangler.jsonc), README.md
   07-image/                     worker.js, broken-example.js, README.md
+  09-mcp/                        (bonus) Worker + Durable Object + MCP resource/tool, npm project, README.md
   README.md                     phase index, timing budget, bindings table
 docs/                          # PRD, run-of-show, and other operational docs
   PRD.md
@@ -103,7 +131,7 @@ docs/                          # PRD, run-of-show, and other operational docs
 README.md
 ```
 
-No `wrangler.toml`/`wrangler.jsonc` anywhere except `presentation-code/06-languages/` — that phase is the one flagged exception, since Python Workers require Wrangler and can't be created through the dashboard. Everywhere else, deploys are manual and bindings/secrets get configured by hand via the dashboard.
+No `wrangler.toml`/`wrangler.jsonc`/`package.json` anywhere except `presentation-code/06-languages/` and `presentation-code/09-mcp/` — those are the two flagged exceptions, since Python Workers (Phase 6) and a Durable-Object-backed MCP server with real npm dependencies (Phase 9, bonus) both require Wrangler and can't be created through the dashboard. Everywhere else, deploys are manual and bindings/secrets get configured by hand via the dashboard.
 
 ## Reference links
 

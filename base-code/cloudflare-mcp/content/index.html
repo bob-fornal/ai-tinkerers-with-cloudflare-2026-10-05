@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bob's Cloudflare MCP</title>
+<style>
+  :root {
+    --color-bg: #f8fafc;
+    --color-surface: #ffffff;
+    --color-border: #e2e8f0;
+    --color-text: #0f172a;
+    --color-text-muted: #475569;
+    --color-primary: #f38020;
+    --color-primary-dark: #c2600f;
+    --color-code-bg: #0f172a;
+    --color-code-text: #e2e8f0;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-12: 3rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.5rem;
+    --text-2xl: 2rem;
+    --max-width: 48rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-bg: #0b1120;
+      --color-surface: #111827;
+      --color-border: #1f2937;
+      --color-text: #f1f5f9;
+      --color-text-muted: #94a3b8;
+      --color-primary: #f38020;
+      --color-primary-dark: #ffa552;
+      --color-code-bg: #0b1120;
+      --color-code-text: #e2e8f0;
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: var(--text-base);
+    line-height: 1.6;
+  }
+
+  .page {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: var(--space-6) var(--space-4) var(--space-12);
+  }
+
+  .site-header {
+    padding: var(--space-8) 0 var(--space-6);
+    text-align: center;
+  }
+
+  .site-header__eyebrow {
+    display: inline-block;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    margin-bottom: var(--space-2);
+  }
+
+  .site-header__title {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-2xl);
+    font-weight: 800;
+  }
+
+  .site-header__subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
+  }
+
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+  }
+
+  .card__title {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-xl);
+    font-weight: 700;
+  }
+
+  .card__title-icon {
+    margin-right: var(--space-2);
+  }
+
+  .card__body p {
+    color: var(--color-text-muted);
+    margin: 0 0 var(--space-4);
+  }
+
+  .card__body p:last-child {
+    margin-bottom: 0;
+  }
+
+  .connect__endpoint {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    background: var(--color-code-bg);
+    color: var(--color-code-text);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin: var(--space-4) 0;
+  }
+
+  .connect__endpoint-label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-primary-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .connect__endpoint-value {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: var(--text-base);
+    word-break: break-all;
+  }
+
+  .connect__list {
+    list-style: none;
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .connect__list-item {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .connect__list-kind {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    min-width: 5rem;
+  }
+
+  .connect__list-name {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-weight: 600;
+  }
+
+  .connect__list-desc {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    flex-basis: 100%;
+  }
+
+  .topics__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: topic;
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .topics__item {
+    counter-increment: topic;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .topics__item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .topics__item::before {
+    content: counter(topic, decimal-leading-zero);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--color-primary);
+    min-width: 2rem;
+    padding-top: 0.15rem;
+  }
+
+  .clients__list {
+    display: grid;
+    gap: var(--space-3);
+    margin: var(--space-4) 0 0;
+  }
+
+  .client {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .client__summary {
+    cursor: pointer;
+    list-style: none;
+    padding: var(--space-3) var(--space-4);
+    font-weight: 600;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .client__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .client__summary::before {
+    content: "▸";
+    color: var(--color-primary);
+    transition: transform 0.15s ease;
+  }
+
+  .client[open] > .client__summary::before {
+    transform: rotate(90deg);
+  }
+
+  .client__body {
+    padding: 0 var(--space-4) var(--space-4);
+    color: var(--color-text-muted);
+  }
+
+  .client__body p {
+    margin: 0 0 var(--space-3);
+  }
+
+  .client__body p:last-child {
+    margin-bottom: 0;
+  }
+
+  .client__body ol,
+  .client__body ul {
+    margin: 0 0 var(--space-3);
+    padding-left: 1.25em;
+  }
+
+  .client__body li {
+    margin-bottom: var(--space-2);
+  }
+
+  .client__body pre {
+    background: var(--color-code-bg);
+    color: var(--color-code-text);
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4);
+    overflow-x: auto;
+    font-size: var(--text-sm);
+  }
+
+  .client__body code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  .client__body :not(pre) > code {
+    background: var(--color-bg);
+    border-radius: 0.25rem;
+    padding: 0.1em 0.35em;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .client__summary::before {
+      transition: transform 0.15s ease;
+    }
+  }
+
+  .site-footer {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    padding-top: var(--space-6);
+  }
+
+  .site-footer__link {
+    color: var(--color-primary-dark);
+    font-weight: 600;
+    text-decoration: none;
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .site-footer__link:focus-visible,
+  a:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  .site-footer__link:hover {
+    text-decoration: underline;
+  }
+
+  @media (min-width: 40rem) {
+    .site-header__title {
+      font-size: 2.5rem;
+    }
+
+    .card {
+      padding: var(--space-8);
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <span class="site-header__eyebrow">Model Context Protocol Server</span>
+      <h1 class="site-header__title">Bob's Cloudflare MCP</h1>
+      <p class="site-header__subtitle">Cloudflare Workers &amp; Durable Objects learnings, on tap for any MCP client.</p>
+    </header>
+
+    <main>
+      <section class="card" aria-labelledby="about-heading">
+        <h2 class="card__title" id="about-heading">
+          <span class="card__title-icon" aria-hidden="true">📘</span>What this is
+        </h2>
+        <div class="card__body">
+          <p>
+            This service publishes Bob's hands-on Cloudflare Workers, Durable Objects, D1, KV, and
+            Workers AI learnings as a single reference document &mdash; available to any
+            <abbr title="Model Context Protocol">MCP</abbr> client, and readable right here in your browser.
+          </p>
+          <p>
+            The content is fixed at deploy time: there's no editor, no admin panel, and no runtime
+            write path. Updating it means changing the source files and shipping a new deploy.
+          </p>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="connect-heading">
+        <h2 class="card__title" id="connect-heading">
+          <span class="card__title-icon" aria-hidden="true">🔌</span>Connect via MCP
+        </h2>
+        <div class="card__body">
+          <p>Point any MCP client (Claude Desktop, MCP Inspector, etc.) at this server's Streamable HTTP endpoint:</p>
+          <div class="connect__endpoint">
+            <span class="connect__endpoint-label">Endpoint</span>
+            <code class="connect__endpoint-value">https://cloudflare-mcp.bobs-cloudflare-mcp.workers.dev/mcp</code>
+          </div>
+          <ul class="connect__list">
+            <li class="connect__list-item">
+              <span class="connect__list-kind">Resource</span>
+              <span class="connect__list-name">cloudflare-learnings</span>
+              <span class="connect__list-desc">Reads the full learnings document as <code>text/markdown</code>.</span>
+            </li>
+            <li class="connect__list-item">
+              <span class="connect__list-kind">Tool</span>
+              <span class="connect__list-name">get_cloudflare_learnings</span>
+              <span class="connect__list-desc">Takes no arguments; returns the same document as tool output.</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="clients-heading">
+        <h2 class="card__title" id="clients-heading">
+          <span class="card__title-icon" aria-hidden="true">🧩</span>Connect from your tool
+        </h2>
+        <div class="card__body">
+          <p>Step-by-step setup for common MCP clients. Replace the endpoint above with your own deployed URL.</p>
+          <div class="clients__list">
+            <details class="client">
+              <summary class="client__summary">Claude (Desktop or claude.ai)</summary>
+              <div class="client__body">
+                <ol>
+                  <li>Open <strong>Settings &rarr; Connectors</strong> (claude.ai) or <strong>Settings &rarr; Customize &rarr; Connectors</strong> (Claude Desktop).</li>
+                  <li>Choose <strong>Add custom connector</strong>.</li>
+                  <li>Paste the MCP URL above. Leave authentication blank &mdash; the server is public.</li>
+                </ol>
+              </div>
+            </details>
+
+            <details class="client">
+              <summary class="client__summary">Claude Code (CLI)</summary>
+              <div class="client__body">
+                <p>Run:</p>
+                <pre><code>claude mcp add --transport http bobs-cloudflare-mcp https://cloudflare-mcp.bobs-cloudflare-mcp.workers.dev/mcp</code></pre>
+                <p>Add <code>--scope user</code> to make it available across all your projects instead of just the current one.</p>
+              </div>
+            </details>
+
+            <details class="client">
+              <summary class="client__summary">GitHub Copilot (VS Code)</summary>
+              <div class="client__body">
+                <p>Add an entry to your workspace <code>.vscode/mcp.json</code> (or via the Command Palette &rarr; <strong>MCP: Open User Configuration</strong> for a user-wide config):</p>
+                <pre><code>{
+  "servers": {
+    "bobs-cloudflare-mcp": {
+      "type": "http",
+      "url": "https://cloudflare-mcp.bobs-cloudflare-mcp.workers.dev/mcp"
+    }
+  }
+}</code></pre>
+              </div>
+            </details>
+
+            <details class="client">
+              <summary class="client__summary">ChatGPT</summary>
+              <div class="client__body">
+                <p>Requires Developer Mode, which needs a Business/Enterprise/Edu plan (Pro is limited to read/fetch-only access; Free doesn't support custom connectors).</p>
+                <ol>
+                  <li><strong>Settings &rarr; Apps &rarr; Advanced settings</strong> &rarr; enable <strong>Developer mode</strong>.</li>
+                  <li><strong>Settings &rarr; Connectors &rarr; Create</strong>.</li>
+                  <li>Fill in a name and description, paste the MCP URL above, and set <strong>Authentication</strong> to <strong>None</strong>.</li>
+                </ol>
+              </div>
+            </details>
+
+            <details class="client">
+              <summary class="client__summary">Any other MCP client</summary>
+              <div class="client__body">
+                <p>Any client that speaks the MCP Streamable HTTP transport can connect directly to the <code>/mcp</code> URL above &mdash; there's no proprietary protocol or required client library.</p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="topics-heading">
+        <h2 class="card__title" id="topics-heading">
+          <span class="card__title-icon" aria-hidden="true">🗂️</span>Topics covered
+        </h2>
+        <div class="card__body">
+          <ol class="topics__list">
+            <li class="topics__item">Overview</li>
+            <li class="topics__item">Cloudflare Worker API Guidelines</li>
+            <li class="topics__item">Cloudflare D1 (SQLite) Guidelines</li>
+            <li class="topics__item">Durable Objects Guidelines</li>
+            <li class="topics__item">Key-Value (KV) Namespaces as a Document Store</li>
+            <li class="topics__item">Example Structure</li>
+            <li class="topics__item">Workers AI (Text-to-Image) Guidelines</li>
+          </ol>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Built on Cloudflare Workers &amp; Durable Objects &middot;
+        <a class="site-footer__link" href="https://modelcontextprotocol.io" rel="noopener noreferrer">
+          Learn about MCP
+        </a>
+        &middot;
+        <a class="site-footer__link" href="https://github.com/bob-fornal/ai-bobs-cloudflare-mcp" rel="noopener noreferrer">
+          View on GitHub
+        </a>
+      </p>
+    </footer>
+  </div>
+</body>
+</html>

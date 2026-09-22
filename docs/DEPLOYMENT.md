@@ -15,8 +15,8 @@ bottom as you go — [`PRE-PRESENTATION.md`](PRE-PRESENTATION.md) and
 
 - [ ] Cloudflare account with Workers AI enabled.
 - [ ] Dashboard access confirmed (can create a Worker, add bindings).
-- [ ] Node.js (LTS) and Wrangler installed locally — **only needed for
-      Phase 6**: `npm install -g wrangler`, then `wrangler login`.
+- [ ] Node.js (LTS) and Wrangler installed locally — **needed for Phases 6
+      and 9**: `npm install -g wrangler`, then `wrangler login`.
 - [ ] Model IDs re-verified against
       [developers.cloudflare.com/workers-ai/models](https://developers.cloudflare.com/workers-ai/models/)
       — don't trust the IDs baked into this repo without a fresh check; the
@@ -135,6 +135,32 @@ the dashboard.
       — that's intentionally left live and unscripted. See
       `07-image/README.md` and `SCRIPT.md` before deciding otherwise.
 
+## 9 (bonus). `presentation-code/09-mcp/`
+
+The other phase needing the CLI — real npm dependencies and a Durable
+Object, not a dashboard paste-in. This one is a bonus, first to cut per
+`SCRIPT.md` — deploy it last, and don't stress the checklist below if you're
+already tight on prep time.
+
+- [ ] `cd presentation-code/09-mcp && npm install`
+- [ ] `npx wrangler login` (if not already done for Phase 6).
+- [ ] `npm run deploy` (runs `build:content` first via the `predeploy` hook,
+      then `wrangler deploy`).
+- [ ] **First deploy on a fresh account only:** check the deploy output for
+      a warning about registering a `*.workers.dev` subdomain. If present,
+      claim one via the dashboard link in the warning, then redeploy — no
+      code change needed.
+- [ ] Sanity check: `curl https://phase9-mcp.<your-subdomain>.workers.dev/`
+      returns the HTML landing page.
+- [ ] Sanity check: connect an MCP client (`claude mcp add --transport http
+      ...`) or run the `curl` JSON-RPC smoke test in `09-mcp/README.md`,
+      confirm the resource/tool list and a call both return the expected
+      Markdown.
+- [ ] This phase was adopted from real code, not independently re-verified
+      in the session that built this repo — see `09-mcp/README.md`'s
+      "Honest caveat" before trusting it further than you've tested it
+      yourself.
+
 ## Record your URLs here
 
 | Phase | Worker name | URL |
@@ -151,3 +177,4 @@ the dashboard.
 | 6 — py | | |
 | 7 — worker | | |
 | 7 — broken-example | | |
+| 9 (bonus) — MCP server | | |

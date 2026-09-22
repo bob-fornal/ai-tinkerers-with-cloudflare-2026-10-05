@@ -1,0 +1,25 @@
+name = "phase9-mcp"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+# Required even though this project's own code uses no Node built-ins --
+# the `agents` package uses node:async_hooks internally for the MCP
+# Streamable HTTP transport. Without this flag the Worker fails to boot
+# with "Uncaught Error: No such module 'node:async_hooks'" -- confirmed
+# live in base-code/copilot/cloudflare/08-mcp-server-guidelines.md.
+compatibility_flags = ["nodejs_compat"]
+
+[[durable_objects.bindings]]
+name = "LEARNINGS_HUB"
+class_name = "LearningsHub"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["LearningsHub"]
+
+# Bundles content/**/*.md and content/index.html as plain string constants --
+# see src/types/content-modules.d.ts for the matching TypeScript ambient
+# declarations.
+[[rules]]
+type = "Text"
+globs = ["**/*.md", "**/*.html"]
+fallthrough = true

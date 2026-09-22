@@ -6,10 +6,12 @@ first if you're behind. Full detail per phase (exact requests, full demo
 steps) lives in each `presentation-code/<phase>/README.md`; this doc is the
 condensed version to have open on stage.
 
-**Hard limit: 15 minutes. Planned total: ~16.5 minutes.** That gap is by
+**Hard limit: 15 minutes. Planned total: ~19.5 minutes.** That gap is by
 design, not an oversight — see "If you're running behind" below. Every phase
 is already deployed (see `DEPLOYMENT.md`); nothing here is typed live except
-one variable edit in Phase 2.
+one variable edit in Phase 2. Phase 9 is a bonus, tacked on after the
+original eight-phase journey — it's the reason the gap is this wide, and the
+first thing to give up.
 
 ## If you're running behind — cut in this order
 
@@ -18,23 +20,31 @@ these in order — each one is a bigger cut than the last, so stop as soon as
 you're back on pace. Don't apply them out of order: Phases 0, 1a/1b, 2, and 7
 are the spine of the talk (Phase 7 especially — it's the finale and the
 "here's an honest unsolved problem" moment, worth protecting even under time
-pressure) and shouldn't be cut before Phase 6 or trimmed before 3/4/5.
+pressure) and shouldn't be cut before Phase 9, then Phase 6, or trimmed
+before 3/4/5.
 
-1. **Cut Phase 6 entirely (saves ~2 min).** Replace with one sentence: "I
+1. **Cut Phase 9 entirely (saves ~3 min).** It's a bonus phase, not part of
+   the original journey — the least costly thing in the whole talk to drop.
+   This decision can be made at any point, not just near the end: as soon as
+   you know you're behind, mentally cross Phase 9 off and stop worrying
+   about the last 3 minutes of budget. One line if it comes up: "There's a
+   bonus phase on this in the repo — an MCP server, if you want to see what
+   building something genuinely new on this platform surfaces."
+2. **Cut Phase 6 entirely (saves ~2 min).** Replace with one sentence: "I
    also compared JS, TS, and Python — JS and TS were identical, because TS
    just compiles to the same JS before it ever runs; Python was the real
    outlier, since it runs through a completely different WASM runtime. Full
    numbers are in the repo." Move straight to Phase 7.
-2. **Trim Phase 5 (saves ~1 min).** Skip the dashboard-usage-page comparison,
+3. **Trim Phase 5 (saves ~1 min).** Skip the dashboard-usage-page comparison,
    go straight to `/usage`, point at `days[]` and `freeNeuronsPerDay` once.
    One line: "Cloudflare's own usage page exists — it's just thin. This
    fills in the detail."
-3. **Trim Phase 3 (saves ~30-45 sec).** Run `/eval` against two models
+4. **Trim Phase 3 (saves ~30-45 sec).** Run `/eval` against two models
    instead of three.
-4. **Trim Phase 4 (saves ~20-30 sec).** Skip live-demoing
+5. **Trim Phase 4 (saves ~20-30 sec).** Skip live-demoing
    `micro-humanizer-attempt.js` — mention it in one sentence instead of
    showing the file.
-5. **Tighten 1a/1b (saves ~20-30 sec, last resort).** Show the truncated
+6. **Tighten 1a/1b (saves ~20-30 sec, last resort).** Show the truncated
    output and the one-line fix back to back without a separate pause between
    them — don't cut either one, they're quick and they're the freshest,
    least-expected finding in the talk.
@@ -45,13 +55,14 @@ pressure) and shouldn't be cut before Phase 6 or trimmed before 3/4/5.
 |---|---|---|
 | 0:00 | Phase 0 | — |
 | 1:30 | Phase 1a | Tighten Phase 0's catalog-page walkthrough |
-| 3:30 | Phase 2 | Apply cut #5 |
-| 5:00 | Phase 3 | Apply cut #5 if not already |
-| 7:00 | Phase 4 | Apply cut #3 |
-| 9:30 | Phase 5 | Apply cuts #3-4 |
-| 11:30 | Phase 6 (or skip straight to 7) | **Apply cut #1 — skip Phase 6 outright** |
-| 13:30 | Phase 7 | Apply cut #1 and #2 |
-| 16:00 | Closing | You're at the wire either way — wrap in 30 seconds |
+| 3:30 | Phase 2 | Apply cut #6 |
+| 5:00 | Phase 3 | Apply cut #6 if not already |
+| 7:00 | Phase 4 | Apply cut #4 |
+| 9:30 | Phase 5 | Apply cuts #4-5 |
+| 11:30 | Phase 6 (or skip straight to 7) | **Apply cut #2 — skip Phase 6 outright** (cut #1 should already be a settled decision by now, not something to newly apply here) |
+| 13:30 | Phase 7 | Apply cuts #2 and #3 |
+| 16:00 | Phase 9 (bonus) or Closing | **Apply cut #1 if you haven't already** — go straight to Closing |
+| 19:00 | Closing | You're at the wire either way — wrap in 30 seconds |
 
 ## Phase-by-phase
 
@@ -160,13 +171,32 @@ pressure) and shouldn't be cut before Phase 6 or trimmed before 3/4/5.
   better shape." Don't improvise past that line — there's no video-generation
   research behind this talk to draw on.
 
+### Phase 9 (bonus) — An MCP server on Workers
+**~3 min · Priority: cut first if short on time — see cut order above**
+- Frame it up front, honestly: "This last one isn't from the original
+  journey. It's separate, real Cloudflare work — but it's too good a 'here's
+  what breaks when you try something genuinely new' source to leave out."
+- Show `src/index.ts` and `learnings-hub.ts` — a stateless MCP handler (not
+  the deprecated `McpAgent`), reading from a Durable Object that has zero
+  MCP awareness, just seed-once storage.
+- Open `/` in a browser — the landing page, quick proof it's live.
+- Connect it: `claude mcp add --transport http bobs-cloudflare-mcp
+  https://phase9-mcp.<your-subdomain>.workers.dev/mcp`.
+- Ask the connected client something the tool/resource can answer — ideally
+  something that surfaces the Phase 7 img2img/account-gating discrepancy
+  live, tying this bonus phase back into the talk's own open thread.
+- Land: "The same 'read the actual output, verify before trusting' habits
+  from every phase tonight apply just as much here — and this one has
+  nothing to do with Workers AI at all."
+
 ### Closing
 **~0.5 min**
-- Walk back through the eight takeaways as a single list — see
-  [`TAKEAWAYS.md`](TAKEAWAYS.md) for the full write-up of each one, this is
-  just the recap: token limits, hard-coded models, eval harnesses, gated
-  humanizing, cost visibility, language choice, per-model image handling,
-  and re-verifying old findings.
+- Walk back through the eight takeaways as a single list, plus the Phase 9
+  bonus lesson if you got to it — see [`TAKEAWAYS.md`](TAKEAWAYS.md) for the
+  full write-up of each one, this is just the recap: token limits,
+  hard-coded models, eval harnesses, gated humanizing, cost visibility,
+  language choice, per-model image handling, re-verifying old findings, and
+  (bonus) the same habits applying to non-AI Worker code.
 - Point at the repo as the reusable starting point.
 - Name the one open problem — reference-image generation — as an invitation,
   not a loose end.

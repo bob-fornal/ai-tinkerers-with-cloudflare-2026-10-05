@@ -1,0 +1,28 @@
+# MCP Server on Workers & Durable Objects Guidelines
+
+Confirmed while building an actual MCP server (Worker + Durable Object) end-to-end,
+including a real `npm install`, local `wrangler dev` smoke tests, and a first-ever
+production deploy to a fresh Cloudflare account.
+
+## Choosing an MCP server pattern
+* **`McpAgent` is deprecated and feature-frozen.** Cloudflare's Agents docs mark it as legacy-only, kept for existing servers mid-migration. For a new server, use the stateless `createMcpHandler` from `agents/mcp/server` (paired with `@modelcontextprotocol/server`, MCP SDK v2) instead — it's also the better fit whenever the server has no per-session state to remember, since `McpAgent` ties every session to its own Durable Object instance for no benefit in that case.
+* **`createMcpHandler` builds one `McpServer` per request** from a factory function you pass it — do not construct the server once at module scope and pass the instance. A zero-argument factory is valid; if a resource/tool handler needs bindings from `env`, define the factory as a closure created inside the Worker's `fetch(request, env, ctx)` so it captures that request's `env` — `createMcpHandler`'s factory itself only receives protocol context (`era`, `authInfo`, `requestInfo`), not `env`.
+* **Building a new `createMcpHandler(...)` inside every `fetch()` call is fine** for ordinary tools/resources — only hoist it to module scope if you need `notify.*` (list-changed notifications) or long-lived subscriptions, since those are tied to one handler instance.
+
+## A Durable Object can be pure storage behind a stateless MCP handler
+* When the content a tool/resource serves is static (not per-session), keep the Durable Object as a plain `DurableObject` subclass (from `cloudflare:workers`) with no MCP awareness at all — just storage plus a couple of public async methods (e.g. `getMarkdown()`, `getHtml()`). Public methods on a DO class are callable directly on its stub via RPC; there's no need to route this through `fetch()`.
+* Since the content is identical however it's produced, it doesn't matter whether the MCP handler's internal request routing and a fixed `idFromName("singleton")` stub happen to hit the same Durable Object instance or different ones — each independently self-seeds from the same build-time bundle on first touch. No cross-instance coordination needed.
+* **Seeding pattern:** compare a stored `content:version` key against a build-time version constant on first access; reseed only on mismatch (including "not yet seeded"). Memoize the seeding operation on a single in-flight promise so concurrent requests against a cold instance don't race to write storage redundantly.
+
+## MCP SDK v2 (`@modelcontextprotocol/server`) registration details
+* **A fixed-URI resource doesn't need `ResourceTemplate`.** `server.registerResource(name, "some-scheme://fixed-uri", metadata, handler)` works directly with a plain string URI — `ResourceTemplate` (`new ResourceTemplate("scheme://{param}", ...)`) is only for a parameterized/dynamic URI.
+* **Tool handler `content` items need a literal `type`, not a widened `string`.** `{ content: [{ type: "text", text: ... }] }` fails to type-check against `registerTool`'s discriminated-union return type unless the literal is preserved: `{ type: "text" as const, text: ... }`. Without the `as const`, TypeScript widens `type` to `string` and every overload rejects the return value.
+
+## Runtime & dependency gotchas
+* **`compatibility_flags = ["nodejs_compat"]` is required even with zero Node built-ins in your own code**, if you depend on the `agents` package — it uses `node:async_hooks` internally for the MCP transport. Without the flag the Worker fails at boot with `Uncaught Error: No such module "node:async_hooks"`, not a build-time error, so it only surfaces when you actually run `wrangler dev`/`deploy`.
+* **`agents`'s peer dependencies force specific major versions:** it peer-requires `zod@^4.0.0` (a v3 pin in your own `package.json` triggers an `ERESOLVE` conflict) and, via `partyserver`, `@cloudflare/workers-types@^5.x` — which also happens to be what a current `wrangler@^4.x` itself expects. Pin `zod` and `@cloudflare/workers-types` to those majors up front rather than discovering the conflict on first `npm install`.
+* **Bundling a Markdown/HTML file as a plain string import** needs a `wrangler.toml` `[[rules]]` entry (`type = "Text"`, matching `globs`) plus a matching `declare module "*.md" { const content: string; export default content }` ambient type — then `import notes from "./notes.md"` just works, no runtime parsing needed for static reference content.
+* **Type-check build tooling and Worker runtime code separately.** A Node-only build script (using `node:fs`, `node:path`, etc.) and the Worker's own source target different global environments (`@types/node` vs `@cloudflare/workers-types`); one shared `tsconfig.json` with both `types` arrays merged doesn't work cleanly — use two `tsconfig*.json` files, one per environment, each run via its own `tsc --noEmit -p ...` invocation.
+
+## First deploy to a fresh account
+* **`wrangler deploy` can report success while the URL is still unreachable.** On an account with no `*.workers.dev` subdomain registered yet, `wrangler deploy` prints a warning (`You need to register a workers.dev subdomain before publishing to workers.dev`) but still uploads the Worker and reports `Success!` — the deploy itself worked, but the URL fails TLS handshake (not a DNS-propagation delay) until a subdomain is claimed via the dashboard link the warning provides. Redeploying after registering the subdomain is enough; no code change is needed.
