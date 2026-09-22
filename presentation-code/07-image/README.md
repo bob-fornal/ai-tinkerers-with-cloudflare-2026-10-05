@@ -68,6 +68,26 @@ curl -X POST https://<worker>.workers.dev \
   -d '{"prompt": "portrait of a viking warrior with a wild beard"}'
 ```
 
+## If asked about video generation
+
+Image generation on this platform hasn't been demonstrated as stable in this
+talk yet — that's the whole point of this phase. Video generation is
+deliberately out of scope: **there's no intent to test video on Workers AI
+until image generation stabilizes.** This question is likely to come up
+given the parameter inconsistencies and open reference-image failure just
+demonstrated, so have the line ready rather than fielding it cold:
+
+> "I haven't touched video generation on this platform, on purpose. Image
+> generation alone has the rough edges you just watched — inconsistent
+> parameters, a live unknown on reference images. Video's a harder problem
+> than image, not an easier one, so I'm not testing it until image
+> generation itself is in better shape."
+
+Don't improvise a technical answer about Workers AI's video capabilities on
+the spot — this repo has no video-generation code, no research into it, and
+no basis for claiming it works, half-works, or doesn't exist. The honest
+answer is the scoping decision above, not a guess.
+
 ## Gap vs. the base code
 
 `base-code/image-generation/image-generator.js` is bundled/compiled output

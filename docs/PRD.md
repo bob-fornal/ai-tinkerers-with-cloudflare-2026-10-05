@@ -6,7 +6,7 @@ A live-code presentation repo. The format isn't "here are slides about Workers A
 
 Every phase below happened in roughly this order during real development. The presentation reconstructs each one as its own step, including the failures, because the failures are most of the lesson.
 
-**Repo layout convention:** the messy, real source this journey grew out of lives under [`base-code/`](base-code/) — `athlete-articles` (the production app the summarization/fallback/eval/humanizer logic was pulled from), `claude/humanize-writing` (the skill and its Python checker), `cloudflare-usage-worker` (the usage/cost API), and `image-generation` (the two image-generation attempts). None of that gets demoed directly — it's reference and mining material. The lean, phase-by-phase code that actually gets live-coded on stage lives under `presentation-code/`, built by extracting and simplifying the relevant pieces out of `base-code/` per phase (Section 7 below maps each phase to its `base-code/` source).
+**Repo layout convention:** the messy, real source this journey grew out of lives under [`base-code/`](../base-code/) — `athlete-articles` (the production app the summarization/fallback/eval/humanizer logic was pulled from), `claude/humanize-writing` (the skill and its Python checker), `cloudflare-usage-worker` (the usage/cost API), and `image-generation` (the two image-generation attempts). None of that gets demoed directly — it's reference and mining material. The lean, phase-by-phase code that actually gets live-coded on stage lives under `presentation-code/`, built by extracting and simplifying the relevant pieces out of `base-code/` per phase (Section 7 below maps each phase to its `base-code/` source).
 
 ## 2. Background: how this project actually unfolded
 
@@ -22,19 +22,19 @@ Every phase below happened in roughly this order during real development. The pr
 
 **Then I turned the same scrutiny on my own writing tooling.** I wanted to implement the "humanizer" behind the `humanize-writing` skill documentation as something a Worker could run automatically, not just a checklist I ran by hand before publishing. First attempt: a micro-humanizer — collapse the generated text down to a two-sentence summary and let the compression itself knock out the AI-sounding artifacts. I tested it and it didn't hold up; summarizing away the tells also summarized away the content. What actually worked: JavaScript gates — the same banned-word, boilerplate-phrase, and sentence-burstiness checks the skill already uses — run directly against the generated text, cheap and deterministic. Only the specific portion that fails a gate gets sent to a smaller model for a targeted fix, instead of re-running the whole piece through a heavier model. It lands almost as effective as a full-pass model rewrite, for a fraction of the neuron spend — which is exactly the mindset that made the next problem worth solving properly instead of just watching the counter.
 
-**Cost became the next constraint.** Cloudflare's free tier caps out at 10,000 neurons — Workers AI's own compute-usage unit — and staying inside that budget while still running comparisons meant I needed to actually see where neurons were going. That turned into a small usage-and-cost analysis API, which I later extended to give a **daily breakdown** rather than just a running total.
+**Cost became the next constraint.** Cloudflare's free tier caps out at 10,000 neurons — Workers AI's own compute-usage unit — and staying inside that budget while still running comparisons meant I needed to actually see where neurons were going. Cloudflare's own dashboard has a usage page for this (`dash.cloudflare.com/<account_id>/ai/workers-ai/usage`), but the detail it surfaces is thin. That gap is what turned into a small usage-and-cost analysis API of my own, which I later extended to give a **daily breakdown** rather than just a running total.
 
 **Language performance came up next: JavaScript vs. TypeScript vs. Python.** I wanted to know whether the language a Worker is written in matters for AI-call performance. Python support was broken at the time I tested it — worth noting as a dated, point-in-time finding rather than a permanent verdict, since Python Workers support has been actively evolving.
 
 **Last stop: image generation, and it was the roughest edge of the whole journey.** Parameter handling was inconsistent across models — `height`/`width` values that worked for one model broke another outright. Content filtering produced false positives (a prompt containing "wild beard" tripped the NSFW filter). And I never got image-to-image generation working with a reference image, despite multiple attempts — that one's an open failure, not a solved problem, and the presentation should say so honestly rather than papering over it.
 
-*Note added while rebuilding this for the talk:* checking the original code's reference-image model ID against today's catalog turned up a likely explanation — that exact ID doesn't exist in the current listing at all, only a similarly-named inpainting model does. Possibly a wrong model ID the whole time, not a deeper platform limitation. See [`presentation-code/07-image/README.md`](presentation-code/07-image/README.md) for the live-demo angle on this.
+*Note added while rebuilding this for the talk:* checking the original code's reference-image model ID against today's catalog turned up a likely explanation — that exact ID doesn't exist in the current listing at all, only a similarly-named inpainting model does. Possibly a wrong model ID the whole time, not a deeper platform limitation. See [`presentation-code/07-image/README.md`](../presentation-code/07-image/README.md) for the live-demo angle on this.
 
 ## 3. Audience & format
 
 - **Audience:** developers with general JS/TS familiarity, little to no Workers AI experience. Assume they know what a Cloudflare Worker is; don't assume they know the AI binding, `env.AI.run()`, or the model catalog conventions.
 - **Format:** live-coded, phase by phase, in the order above. Each phase should visibly build on the last — the fallback-model logic only makes sense once the audience has watched a model deprecate mid-demo (or seen it staged).
-- **Timebox: 15 minutes, hard.** The goal is getting through as much of the eight-phase story as possible in that window, not covering all eight in full depth. **Every phase is deployed ahead of time** — nothing gets typed from scratch on stage. The show is walking through already-written code and then operating the already-deployed Worker: hitting endpoints, reading responses, and in Phase 2's case, flipping an environment variable and redeploying live (a few seconds, not code-typing) to trigger the fallback. See [`presentation-code/README.md`](presentation-code/README.md) for the per-phase time budget and exactly what happens on stage for each one. The setup checklist, the day-before verification pass, and the run-of-show with its cut priorities are their own docs — [`DEPLOYMENT.md`](DEPLOYMENT.md), [`PRE-PRESENTATION.md`](PRE-PRESENTATION.md), [`SCRIPT.md`](SCRIPT.md) — rather than folded into this PRD.
+- **Timebox: 15 minutes, hard.** The goal is getting through as much of the eight-phase story as possible in that window, not covering all eight in full depth. **Every phase is deployed ahead of time** — nothing gets typed from scratch on stage. The show is walking through already-written code and then operating the already-deployed Worker: hitting endpoints, reading responses, and in Phase 2's case, flipping an environment variable and redeploying live (a few seconds, not code-typing) to trigger the fallback. See [`presentation-code/README.md`](../presentation-code/README.md) for the per-phase time budget and exactly what happens on stage for each one. The setup checklist, the day-before verification pass, and the run-of-show with its cut priorities are their own docs — [`DEPLOYMENT.md`](DEPLOYMENT.md), [`PRE-PRESENTATION.md`](PRE-PRESENTATION.md), [`SCRIPT.md`](SCRIPT.md) — rather than folded into this PRD.
 - **Tone:** this is a "here's what actually happened" talk, not a polished how-to. Failures stay in. The NSFW false-positive and the broken reference-image attempt are the two moments worth lingering on, not cutting.
 
 ## 4. Goals
@@ -53,6 +53,7 @@ Every phase below happened in roughly this order during real development. The pr
 - Not attempting full coverage of the Workers AI model catalog — only the models actually touched during the journey (summarization-capable text models, and the image-generation models tried).
 - Not solving the reference-image problem — the PRD documents it as an open failure, and the presentation should too.
 - Not building a general-purpose cost dashboard — the usage/cost API only needs to answer "am I inside the free tier, broken down by day."
+- Not testing or demoing video generation on Workers AI. Image generation itself hasn't stabilized enough yet (Phase 7 is the evidence) — video is deliberately out of scope until that changes. This will come up as an audience question in Phase 7; see `presentation-code/07-image/README.md` for the prepared answer.
 
 ## 6. Success criteria
 
@@ -118,13 +119,14 @@ Two decisions lock in how these get written:
 - [`DEPLOYMENT.md`](DEPLOYMENT.md) — the setup checklist for every phase.
 - [`PRE-PRESENTATION.md`](PRE-PRESENTATION.md) — the day-before/morning-of verification pass.
 - [`SCRIPT.md`](SCRIPT.md) — the run-of-show, mapping each phase to what happens on stage, with pacing checkpoints and a ranked cut order.
+- [`TAKEAWAYS.md`](TAKEAWAYS.md) — the eight closing takeaways, written out in full.
 
 ### Infrastructure requirements, at a glance
 
 No phase needs a database. Only Phase 3 touches KV, and it's optional even
 there. The only secrets in the whole talk are Phase 5's two Cloudflare API
 credentials. Full detail (exact binding names, dashboard setup steps) lives
-in [`presentation-code/README.md`](presentation-code/README.md) and each
+in [`presentation-code/README.md`](../presentation-code/README.md) and each
 phase's own `README.md`; summarized here:
 
 | Phase | `AI` binding | Env vars / secrets | KV | DB |
@@ -140,13 +142,14 @@ phase's own `README.md`; summarized here:
 
 ## 8. Phased implementation plan (steps, not code)
 
-Each phase below is a live-demo unit: a starting state, what gets built or triggered on stage, and what the audience should walk away understanding. Code lives in [`presentation-code/`](presentation-code/), one folder per phase — this is the shape of the walkthrough, with the 15-minute budget and live-type-vs-pre-staged call for each phase noted.
+Each phase below is a live-demo unit: a starting state, what gets built or triggered on stage, and what the audience should walk away understanding. Code lives in [`presentation-code/`](../presentation-code/), one folder per phase — this is the shape of the walkthrough, with the 15-minute budget and live-type-vs-pre-staged call for each phase noted.
 
 ### Phase 0 — Docs and the moving catalog *(~1.5 min, talk only)*
-1. Open the Workers AI get-started guide live.
-2. Point out (or recreate, if staged) the deprecated-model problem as it originally happened.
-3. Pivot to the models catalog page and show how to read it — task type, model ID format, beta/deprecated status.
-4. Land the takeaway: the catalog is the real source of truth, not any one guide or blog post.
+1. Open with the agenda — see [`SUMMARY.md`](SUMMARY.md) — so the audience knows what's coming.
+2. Open the Workers AI get-started guide live.
+3. Point out (or recreate, if staged) the deprecated-model problem as it originally happened.
+4. Pivot to the models catalog page and show how to read it — task type, model ID format, beta/deprecated status.
+5. Land the takeaway: the catalog is the real source of truth, not any one guide or blog post.
 
 ### Phase 1a — First working summarizer, and the cut-off output *(~1 min, pre-deployed — show + invoke)*
 1. Scaffold a minimal Worker with the `AI` binding, a hard-coded model ID, no `max_tokens`.
@@ -181,9 +184,9 @@ Each phase below is a live-demo unit: a starting state, what gets built or trigg
 
 ### Phase 5 — Staying inside the free tier *(~2 min, pre-staged — deploy ahead, invoke live)*
 1. State the constraint plainly: 10,000 neurons/day on the free tier.
-2. Build and call the usage endpoint, showing current consumption.
-3. Extend it to a daily breakdown and show a few days of (real or seeded) history.
-4. Land the takeaway: cost visibility has to be built deliberately — Cloudflare doesn't hand you a per-call running total by default.
+2. Show Cloudflare's own dashboard usage page (`dash.cloudflare.com/<account_id>/ai/workers-ai/usage`) — it exists, but the detail on it is thin.
+3. Call the custom usage endpoint instead, showing current consumption with a daily, per-model breakdown the dashboard page doesn't surface.
+4. Land the takeaway: Cloudflare gives you *some* visibility out of the box — it's not nothing — but anything more detailed than a top-line number is on you to build.
 
 ### Phase 6 — JS vs. TS vs. Python *(~2 min, pre-staged — needs Wrangler, see `presentation-code/06-languages/README.md`)*
 1. Run the same representative AI call through the JS, TS, and Python implementations.
@@ -199,6 +202,6 @@ Each phase below is a live-demo unit: a starting state, what gets built or trigg
 5. Land the takeaway: image generation on Workers AI is the least uniform part of the catalog right now — plan for per-model handling, not a shared code path.
 
 ### Closing *(~0.5 min)*
-1. Walk back through the eight takeaways as a single list.
+1. Walk back through the eight takeaways as a single list — the full write-up of each lives in [`TAKEAWAYS.md`](TAKEAWAYS.md).
 2. Point at the repo as the reusable starting point — eval harness, humanizer gates, usage API, and per-model image handling are all things worth lifting directly.
 3. Name the one open problem explicitly (reference-image generation) as an invitation for the audience, not a loose end to hide.

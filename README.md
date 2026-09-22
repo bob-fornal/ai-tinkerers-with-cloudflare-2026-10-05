@@ -2,7 +2,7 @@
 
 Live-code presentation repo for a walkthrough of Cloudflare Workers AI — built by reconstructing, on stage, the actual path from "read the getting-started guide" to "found the parts of the platform that are still rough." That includes the parts that broke.
 
-Full background, the phase-by-phase story, the code inventory, and the demo run-of-show live in [`PRD.md`](PRD.md). Start there if you want the why. This file covers the what and how.
+Full background, the phase-by-phase story, the code inventory, and the demo run-of-show live in [`docs/PRD.md`](docs/PRD.md). Start there if you want the why. This file covers the what and how.
 
 **This is a 15-minute talk.** Every phase is deployed ahead of time — none of
 it gets typed from scratch on stage. The show is walking through
@@ -10,10 +10,14 @@ already-written code and operating the already-deployed Workers. See
 [`presentation-code/README.md`](presentation-code/README.md) for the
 per-phase time budget and exactly what happens on stage for each one.
 
-**Three operational docs, in the order you'll actually use them:**
-1. [`DEPLOYMENT.md`](DEPLOYMENT.md) — setup checklist, done once ahead of the talk (or re-run whenever a phase's code changes).
-2. [`PRE-PRESENTATION.md`](PRE-PRESENTATION.md) — what to re-check the day before and the morning of.
-3. [`SCRIPT.md`](SCRIPT.md) — the run-of-show, with pacing checkpoints and a ranked cut order for when you're running behind.
+**Five operational docs, in `docs/`, in the order you'll actually use them:**
+1. [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — setup checklist, done once ahead of the talk (or re-run whenever a phase's code changes).
+2. [`docs/PRE-PRESENTATION.md`](docs/PRE-PRESENTATION.md) — what to re-check the day before and the morning of.
+3. [`docs/SUMMARY.md`](docs/SUMMARY.md) — the Phase 0 opening agenda: what the talk covers, said before the get-started-guide walkthrough.
+4. [`docs/SCRIPT.md`](docs/SCRIPT.md) — the run-of-show, with pacing checkpoints and a ranked cut order for when you're running behind.
+5. [`docs/TAKEAWAYS.md`](docs/TAKEAWAYS.md) — the eight closing takeaways, written out in full, for the Closing and as a stand-alone leave-behind.
+
+Also in `docs/`: [`talk-summary-tables.pptx`](docs/talk-summary-tables.pptx) — a two-slide deck of `TAKEAWAYS.md`'s and `SUMMARY.md`'s summary tables.
 
 ## Status
 
@@ -23,7 +27,7 @@ production app, the usage/cost worker, and two image-generation attempts —
 kept as reference and mining material, not demoed directly.
 `presentation-code/` is the lean, phase-by-phase demo code actually shown on
 stage, extracted and simplified from `base-code/` per the mapping in
-[`PRD.md`](PRD.md#7-code-inventory-final-solutions-needed).
+[`docs/PRD.md`](docs/PRD.md#7-code-inventory-final-solutions-needed).
 
 ## What gets covered
 
@@ -37,7 +41,7 @@ stage, extracted and simplified from `base-code/` per the mapping in
 8. **JS vs. TS vs. Python performance** — the same AI call, three languages, compared.
 9. **Image generation** — inconsistent parameters across models, an NSFW false positive, and an honest look at the reference-image flow that never worked.
 
-See [`PRD.md`](PRD.md#8-phased-implementation-plan-steps-not-code) for the full step-by-step for each phase.
+See [`docs/PRD.md`](docs/PRD.md#8-phased-implementation-plan-steps-not-code) for the full step-by-step for each phase.
 
 ## Prerequisites
 
@@ -85,7 +89,14 @@ presentation-code/            # lean, phase-by-phase demo code (built)
   06-languages/                 js/, ts/, py/ (each with a worker + wrangler.jsonc), README.md
   07-image/                     worker.js, broken-example.js, README.md
   README.md                     phase index, timing budget, bindings table
-PRD.md
+docs/                          # PRD, run-of-show, and other operational docs
+  PRD.md
+  DEPLOYMENT.md
+  PRE-PRESENTATION.md
+  SUMMARY.md
+  SCRIPT.md
+  TAKEAWAYS.md
+  talk-summary-tables.pptx
 README.md
 ```
 

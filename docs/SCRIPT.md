@@ -25,10 +25,10 @@ pressure) and shouldn't be cut before Phase 6 or trimmed before 3/4/5.
    just compiles to the same JS before it ever runs; Python was the real
    outlier, since it runs through a completely different WASM runtime. Full
    numbers are in the repo." Move straight to Phase 7.
-2. **Trim Phase 5 (saves ~1 min).** Show the `/usage` response, point at
-   `days[]` and `freeNeuronsPerDay` once, skip narrating the aggregation
-   logic. One line: "Cloudflare doesn't give you this daily breakdown by
-   default — you have to build it."
+2. **Trim Phase 5 (saves ~1 min).** Skip the dashboard-usage-page comparison,
+   go straight to `/usage`, point at `days[]` and `freeNeuronsPerDay` once.
+   One line: "Cloudflare's own usage page exists — it's just thin. This
+   fills in the detail."
 3. **Trim Phase 3 (saves ~30-45 sec).** Run `/eval` against two models
    instead of three.
 4. **Trim Phase 4 (saves ~20-30 sec).** Skip live-demoing
@@ -57,6 +57,8 @@ pressure) and shouldn't be cut before Phase 6 or trimmed before 3/4/5.
 
 ### Phase 0 — Docs and the moving catalog
 **~1.5 min · Priority: protect**
+- Open with the agenda in [`SUMMARY.md`](SUMMARY.md) — ~30-45 sec, sets up
+  what's coming before the get-started-guide walkthrough below.
 - Say: "I started at Cloudflare's own get-started guide. The model it
   referenced was deprecated — dead on arrival. That's fixed now, but it set
   the tone: this catalog moves, and code written against it has a shelf
@@ -119,11 +121,15 @@ pressure) and shouldn't be cut before Phase 6 or trimmed before 3/4/5.
 ### Phase 5 — Staying inside the free tier
 **~2 min · Priority: trim under pressure, don't cut**
 - State the constraint: 10,000 neurons/day, free tier.
+- Show Cloudflare's own dashboard usage page
+  (`dash.cloudflare.com/<account_id>/ai/workers-ai/usage`) — it exists, it's
+  real, but there's not much on it.
 - Invoke `/usage` — real numbers from rehearsal traffic (see
   `PRE-PRESENTATION.md`).
-- Point at `days[]` and `freeNeuronsPerDay`.
-- Land: "Cloudflare doesn't hand you this breakdown by default. You build
-  it, or you fly blind on cost."
+- Point at `days[]` and `freeNeuronsPerDay` — the daily, per-model detail the
+  dashboard page doesn't surface.
+- Land: "Cloudflare gives you a usage page. It's just thin — no daily
+  breakdown, no per-model detail. That part you build yourself."
 
 ### Phase 6 — JS vs. TS vs. Python
 **~2 min · Priority: cut first if short on time**
@@ -147,12 +153,20 @@ pressure) and shouldn't be cut before Phase 6 or trimmed before 3/4/5.
 - Land: "Image generation is the least uniform part of this catalog. And
   maybe — don't take my word for 'it never worked' without checking again
   yourself."
+- **If asked about video generation** (likely, given everything above):
+  "I haven't touched video on this platform, on purpose. Image generation
+  alone has the rough edges you just watched — video's a harder problem, not
+  an easier one, so I'm not testing it until image generation itself is in
+  better shape." Don't improvise past that line — there's no video-generation
+  research behind this talk to draw on.
 
 ### Closing
 **~0.5 min**
-- Walk back through the eight takeaways as a single list (token limits,
-  hard-coded models, eval harnesses, gated humanizing, cost visibility,
-  language choice, per-model image handling, and re-verifying old findings).
+- Walk back through the eight takeaways as a single list — see
+  [`TAKEAWAYS.md`](TAKEAWAYS.md) for the full write-up of each one, this is
+  just the recap: token limits, hard-coded models, eval harnesses, gated
+  humanizing, cost visibility, language choice, per-model image handling,
+  and re-verifying old findings.
 - Point at the repo as the reusable starting point.
 - Name the one open problem — reference-image generation — as an invitation,
   not a loose end.

@@ -1,7 +1,8 @@
 # Phase 5 — Usage & cost analysis API
 
-**Budget: ~2 min.** The "cost visibility has to be built deliberately" phase.
-Deploy ahead of the talk — token setup alone isn't worth burning stage time on.
+**Budget: ~2 min.** The "the built-in dashboard page exists, but it's thin"
+phase. Deploy ahead of the talk — token setup alone isn't worth burning stage
+time on.
 
 ## What it does
 
@@ -9,6 +10,12 @@ Deploy ahead of the talk — token setup alone isn't worth burning stage time on
 Analytics API for real Workers AI usage on this account, buckets it by day,
 and converts tokens into Neurons against the 10,000/day free-tier cap.
 Defaults to the trailing 24 hours if `since`/`until` are omitted.
+
+This isn't the only way to see Workers AI usage — Cloudflare's dashboard has
+its own page at `dash.cloudflare.com/<account_id>/ai/workers-ai/usage`. The
+point of this phase isn't "Cloudflare gives you nothing," it's that the
+dashboard page's detail is thin — no daily breakdown, no per-model neuron/cost
+math, no queryable range — and this API fills that specific gap.
 
 This Worker never calls Workers AI itself — it only reads Cloudflare's
 Analytics API about usage from *other* Workers on the account (including the
@@ -38,16 +45,19 @@ page in the dashboard.
 ## Live demo script
 
 1. State the constraint: 10,000 Neurons/day, free tier.
-2. Hit `/usage` on the already-deployed Worker with no query params —
+2. Show Cloudflare's own dashboard usage page
+   (`dash.cloudflare.com/<account_id>/ai/workers-ai/usage`) first — it's
+   real, it's not nothing, but there's not much on it.
+3. Hit `/usage` on the already-deployed Worker with no query params —
    trailing 24h of whatever's been called during rehearsal/setup. Rehearsing
    Phases 1–4 in the day or so before the talk is what gives this phase real
    numbers to show instead of an empty response.
-3. Point at the `days[]` array — this is the daily breakdown, not just a
-   running total.
-4. Point at `freeNeuronsPerDay` next to `totalNeurons` — the actual "are we
-   inside budget" check.
-5. Land it: "Cloudflare doesn't hand you a per-call running total by
-   default — you have to build this yourself."
+4. Point at the `days[]` array — this is the daily, per-model breakdown the
+   dashboard page doesn't give you.
+5. Point at `freeNeuronsPerDay` next to `totalNeurons` — the actual "are we
+   inside budget" check, in one field.
+6. Land it: "Cloudflare gives you a usage page. It just doesn't give you
+   this level of detail — that part's on you to build."
 
 ```bash
 curl "https://<your-worker>.workers.dev/usage"

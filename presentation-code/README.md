@@ -1,7 +1,7 @@
 # presentation-code
 
 Lean, phase-by-phase demo code for the 15-minute live-code talk. Full story
-in the repo-root [`PRD.md`](../PRD.md); this folder is what actually gets
+in [`docs/PRD.md`](../docs/PRD.md); this folder is what actually gets
 shown on screen.
 
 ## The 15-minute reality
