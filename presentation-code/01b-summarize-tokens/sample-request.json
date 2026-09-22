@@ -1,0 +1,8 @@
+{
+  "title": "What Cloudflare Workers AI Actually Costs You",
+  "articles": [
+    "Cloudflare Workers AI runs inference on Cloudflare's own GPUs, distributed across its edge network, so a model call happens close to the request instead of round-tripping to a single region. Billing is denominated in Neurons, a normalized compute unit that abstracts over the very different costs of a small text model versus a large image model.",
+    "The free tier includes 10,000 Neurons per day, reset daily. Beyond that, Neurons are billed at a flat USD rate regardless of which model produced them, though different models consume Neurons at wildly different rates per request -- a small instruct model might cost a few dozen Neurons per call, while a large image-generation model can burn thousands.",
+    "The model catalog itself changes frequently: new models are added, older ones are marked beta or deprecated, and IDs occasionally change shape entirely between model families. Any code that hard-codes a specific model ID should be treated as having a shelf life, not a permanent dependency."
+  ]
+}
