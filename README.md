@@ -4,6 +4,8 @@ Live-code presentation repo for a walkthrough of Cloudflare Workers AI — built
 
 Full background, the phase-by-phase story, the code inventory, and the demo run-of-show live in [`docs/PRD.md`](docs/PRD.md). Start there if you want the why. This file covers the what and how.
 
+![Bob and AI presenting at the AI Tinkerers Columbus Event (anime style)](./README.jpg)
+
 **This is a 15-minute talk.** Every phase is deployed ahead of time — none of
 it gets typed from scratch on stage. The show is walking through
 already-written code and operating the already-deployed Workers. See
