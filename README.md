@@ -19,7 +19,7 @@ per-phase time budget and exactly what happens on stage for each one.
 4. [`docs/SCRIPT.md`](docs/SCRIPT.md) — the run-of-show, with pacing checkpoints and a ranked cut order for when you're running behind.
 5. [`docs/TAKEAWAYS.md`](docs/TAKEAWAYS.md) — the eight closing takeaways, written out in full, for the Closing and as a stand-alone leave-behind.
 
-Also in `docs/`: [`talk-summary-tables.pptx`](docs/talk-summary-tables.pptx) — a two-slide deck of `TAKEAWAYS.md`'s and `SUMMARY.md`'s summary tables.
+Also in `docs/`: [`talk-summary-tables.pptx`](docs/talk-summary-tables.pptx) — a two-slide deck of `TAKEAWAYS.md`'s and `SUMMARY.md`'s summary tables — and [`docs/SESSION-LOG.md`](docs/SESSION-LOG.md), a chronological record of the AI-assisted session that built this repo: what was asked, what got built, and why.
 
 ## Status
 
@@ -99,6 +99,7 @@ docs/                          # PRD, run-of-show, and other operational docs
   SCRIPT.md
   TAKEAWAYS.md
   talk-summary-tables.pptx
+  SESSION-LOG.md                record of the session that built this repo
 README.md
 ```
 
